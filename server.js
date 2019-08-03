@@ -33,7 +33,7 @@ app.use(express.json())
 client
   .connect()
   .then(() => console.log('Connected to the database 💃 .'))
-  // .then(() => client.query(createTables()))
+  //.then(() => client.query(createTables()))
   // .then(() => client.query(populateTables()))
   .catch(e => console.log('Failed to connect with the database 😪 .'))
 
