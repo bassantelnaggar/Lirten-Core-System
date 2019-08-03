@@ -9,7 +9,7 @@ exports.signup = async (req, res) => {
   if (await userFunctions.checkUsername(username)) {
     if (await userFunctions.checkEmail(email)) {
       if (await userFunctions.checkPassword(password)) {
-        userFunctions.createUser(res, username, email, password)
+        await userFunctions.createUser(res, username, email, password)
       } else {
         res.json({
           header: {
@@ -33,5 +33,63 @@ exports.signup = async (req, res) => {
         timestamp: new Date()
       }
     })
+  }
+}
+
+exports.signin = async (req, res) => {
+  const { email, password } = req.body
+  if (await userFunctions.checkAccount(res, email, password)) {
+    const userId = await userFunctions.getUserId(email)
+    if (!(await userFunctions.checkSuspension(res, userId))) {
+      await userFunctions.signin(res, email)
+    } else {
+      res.json({
+        header: {
+          statusCode: '0106',
+          timestamp: new Date()
+        }
+      })
+    }
+  }
+}
+
+exports.suspendUser = async (req, res) => {
+  const { userId, status } = req.body
+  if (await userFunctions.checkUser(userId)) {
+    if (status) {
+      if (!(await userFunctions.checkSuspension(res, userId))) {
+        await userFunctions.userSuspension(userId, status)
+        res.json({
+          header: {
+            statusCode: '0106',
+            timestamp: new Date()
+          }
+        })
+      } else {
+        res.json({
+          header: {
+            statusCode: '0108',
+            timestamp: new Date()
+          }
+        })
+      }
+    } else {
+      if (await userFunctions.checkSuspension(res, userId)) {
+        await userFunctions.userSuspension(userId, status)
+        res.json({
+          header: {
+            statusCode: '0107',
+            timestamp: new Date()
+          }
+        })
+      } else {
+        res.json({
+          header: {
+            statusCode: '0109',
+            timestamp: new Date()
+          }
+        })
+      }
+    }
   }
 }
