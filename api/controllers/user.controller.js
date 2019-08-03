@@ -43,7 +43,12 @@ exports.signin = async (req, res) => {
     if (!(await userFunctions.checkSuspension(res, userId))) {
       await userFunctions.signin(res, email)
     } else {
-      res.json('Account Suspended')
+      res.json({
+        header: {
+          statusCode: '0106',
+          timestamp: new Date()
+        }
+      })
     }
   }
 }
@@ -54,16 +59,36 @@ exports.suspendUser = async (req, res) => {
     if (status) {
       if (!(await userFunctions.checkSuspension(res, userId))) {
         await userFunctions.userSuspension(userId, status)
-        res.json('Account suspended successfully')
+        res.json({
+          header: {
+            statusCode: '0106',
+            timestamp: new Date()
+          }
+        })
       } else {
-        res.json('Account already unsuspended')
+        res.json({
+          header: {
+            statusCode: '0108',
+            timestamp: new Date()
+          }
+        })
       }
     } else {
       if (await userFunctions.checkSuspension(res, userId)) {
         await userFunctions.userSuspension(userId, status)
-        res.json('Account unsuspended successfully')
+        res.json({
+          header: {
+            statusCode: '0107',
+            timestamp: new Date()
+          }
+        })
       } else {
-        res.json('Account already unsuspended')
+        res.json({
+          header: {
+            statusCode: '0109',
+            timestamp: new Date()
+          }
+        })
       }
     }
   }

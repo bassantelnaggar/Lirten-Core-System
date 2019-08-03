@@ -101,10 +101,20 @@ exports.checkAccount = async (res, email, password) => {
     if (bcrypt.compareSync(password, userPassword)) {
       return true
     } else {
-      res.json('Incorrect Password')
+      res.json({
+        header: {
+          statusCode: '0104',
+          timestamp: new Date()
+        }
+      })
     }
   } else {
-    res.json('Incorrect Email')
+    res.json({
+      header: {
+        statusCode: '0105',
+        timestamp: new Date()
+      }
+    })
     return false
   }
 }
