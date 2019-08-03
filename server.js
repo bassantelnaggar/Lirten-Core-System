@@ -38,13 +38,13 @@ client
   .catch(e => console.log('Failed to connect with the database 😪 .'))
 
 // User routes
-app.use('/api/v1/users', users)
+app.use('/api/users', users)
 
 // Task routes
-app.use('/api/v1/tasks', tasks)
+app.use('/api/tasks', tasks)
 
 //Meeting routes
-app.use('/api/v1/meetings', meetings)
+app.use('/api/meetings', meetings)
 
 const port = process.env.PORT || 5000
 app.listen(port, () => console.log(`Server up and running on ${port} 👍 .`))
