@@ -5,27 +5,15 @@ const client = new pg.Client(connectionString)
 client.connect()
 
 exports.get_users = async (req, res) => {
-  client.query(userFunctions.getUsers, (err, results) => {
-    if (err) {
-      throw err
-    }
-    res.status(200).json(results.rows)
-  })
+  userFunctions.getUsers(req, res)
 }
 
 exports.check_username = async (req, res) => {
   const { username, email, password } = req.body
-  client.query(
-    userFunctions.createUser(username, email, password),
-    (err, results) => {
-      if (err) {
-        throw err
-      }
-      if (results.rows.length !== 0) {
-        res.status(200).json(results.rows)
-      } else {
-        res.send('No data matching!')
-      }
+  if (!userFunctions.checkUsername(username)) {
+    console.log('nooo')
+    if (!userFunctions.checkEmail(email)) {
+      userFunctions.createUser(req, res, username, email, password)
     }
-  )
+  }
 }
