@@ -35,3 +35,36 @@ exports.signup = async (req, res) => {
     })
   }
 }
+
+exports.signin = async (req, res) => {
+  const { email, password } = req.body
+  if (await userFunctions.checkAccount(res, email, password)) {
+    const userId = await userFunctions.getUserId(email)
+    if (!(await userFunctions.checkSuspension(res, userId))) {
+      await userFunctions.signin(res, email)
+    } else {
+      res.json('Account Suspended')
+    }
+  }
+}
+
+exports.suspendUser = async (req, res) => {
+  const { userId, status } = req.body
+  if (await userFunctions.checkUser(userId)) {
+    if (status) {
+      if (!(await userFunctions.checkSuspension(res, userId))) {
+        await userFunctions.userSuspension(userId, status)
+        res.json('Account suspended successfully')
+      } else {
+        res.json('Account already unsuspended')
+      }
+    } else {
+      if (await userFunctions.checkSuspension(res, userId)) {
+        await userFunctions.userSuspension(userId, status)
+        res.json('Account unsuspended successfully')
+      } else {
+        res.json('Account already unsuspended')
+      }
+    }
+  }
+}
