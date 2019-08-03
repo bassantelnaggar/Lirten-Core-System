@@ -8,12 +8,10 @@ const client = new pg.Client(connectionString)
 client.connect()
 
 exports.getUsers = res => {
-  client.query(`SELECT * FROM USERS `, (err, results) => {
-    if (err) {
-      throw err
-    }
-    return res.status(200).json(results.rows)
-  })
+  client
+    .query(`SELECT * FROM USERS `)
+    .then(results => res.status(200).json(results.rows))
+    .catch(err => console.log(err))
 }
 
 exports.checkUsername = async username => {
@@ -55,7 +53,9 @@ exports.createUser = async (res, username, email, password) => {
   const cryptedPassword = bcrypt.hashSync(password, salt)
   await client
     .query(`SELECT id FROM  USERS ORDER BY id DESC LIMIT 1`)
-    .then(results => (id = results.rows[0].id))
+    .then(results =>
+      results.rows.length === 0 ? (id = 0) : (id = results.rows[0].id)
+    )
     .catch(err => console.log(err))
 
   id += 1
@@ -163,12 +163,7 @@ exports.checkSuspension = async (res, userId) => {
 
 exports.userSuspension = async (userId, status) => {
   await client.query(
-    `UPDATE USERS U SET suspended =` +
-      status +
-      `  WHERE U.id=` +
-      "'" +
-      userId +
-      "'"
+    `UPDATE USERS U SET suspended =` + status + `  WHERE U.id=` + userId
   )
 }
 
