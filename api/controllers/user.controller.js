@@ -9,7 +9,7 @@ exports.signup = async (req, res) => {
   if (await userFunctions.checkUsername(username)) {
     if (await userFunctions.checkEmail(email)) {
       if (await userFunctions.checkPassword(password)) {
-        userFunctions.createUser(res, username, email, password)
+        await userFunctions.createUser(res, username, email, password)
       } else {
         res.json({
           header: {
