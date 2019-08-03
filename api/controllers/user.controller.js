@@ -1,14 +1,37 @@
-const { getUsers } = require('../helpers/functions/user.function')
-const pg = require('pg')
-const connectionString = process.env.DATABASE_URL
-const client = new pg.Client(connectionString)
-client.connect()
+const userFunctions = require('../helpers/functions/user.function')
 
-exports.get_users = async (req, res) => {
-  client.query(getUsers, (err, results) => {
-    if (err) {
-      throw err
+exports.get_users = async res => {
+  userFunctions.getUsers(res)
+}
+
+exports.signup = async (req, res) => {
+  const { username, email, password } = req.body
+  if (await userFunctions.checkUsername(username)) {
+    if (await userFunctions.checkEmail(email)) {
+      if (await userFunctions.checkPassword(password)) {
+        userFunctions.createUser(res, username, email, password)
+      } else {
+        res.json({
+          header: {
+            statusCode: '0103',
+            timestamp: new Date()
+          }
+        })
+      }
+    } else {
+      res.json({
+        header: {
+          statusCode: '0102',
+          timestamp: new Date()
+        }
+      })
     }
-    res.status(200).json(results.rows)
-  })
+  } else {
+    res.json({
+      header: {
+        statusCode: '0101',
+        timestamp: new Date()
+      }
+    })
+  }
 }
