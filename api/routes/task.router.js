@@ -3,7 +3,7 @@ const router = express.Router()
 const taskController = require('../controllers/task.controller')
 
 router.post('/createTask/v1', taskController.createTask)
-router.post('/getTasks/v1', taskController.viewTaskList)
+router.post('/viewTaskList/v1', taskController.viewTaskList)
 router.post('/viewMyTasks/v1', taskController.viewMyTasks)
 router.post('/freezeTask/v1', taskController.freezeTask)
 router.post('/applyTask/v1', taskController.applyTask)

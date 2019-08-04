@@ -176,7 +176,7 @@ exports.getUserId = async email => {
   return null
 }
 
-exports.checkUser = async userId => {
+exports.checkUser = async (res, userId) => {
   let length
   await client
     .query(`SELECT * FROM USERS U  WHERE U.id=` + userId)
@@ -186,6 +186,12 @@ exports.checkUser = async userId => {
   if (length === 1) {
     return true
   }
+  res.json({
+    header: {
+      statusCode: '0100',
+      timestamp: new Date()
+    }
+  })
   return false
 }
 

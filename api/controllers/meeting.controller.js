@@ -12,7 +12,7 @@ exports.createMeeting = async (req, res) => {
       organizer
     )
     await userTasks.map(async condition => {
-      if (await userFunctions.checkUser(condition.attendeeId)) {
+      if (await userFunctions.checkUser(res, condition.attendeeId)) {
         if (await userFunctions.checkSuspension(res, condition.attendeeId)) {
           if (
             await taskFunctions.checkUserTask(
@@ -46,7 +46,7 @@ exports.editMeeting = async (req, res) => {
 
 exports.confirmAttending = async (req, res) => {
   const { meetingId, attendeeId, confirmed } = req.body
-  if (await userFunctions.checkUser(attendeeId)) {
+  if (await userFunctions.checkUser(res, attendeeId)) {
     if (await userFunctions.checkSuspension(res, attendeeId)) {
       await meetingFunctions.attendingMeeting(
         res,
