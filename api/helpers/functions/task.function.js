@@ -213,6 +213,26 @@ exports.checkSubmissionStatus = async (res, taskId) => {
   return false
 }
 
+exports.checkUserTask = async (taskId, userId) => {
+  let length
+  await client
+    .query(
+      `SELECT * FROM TASKS T WHERE T.id=` +
+        taskId +
+        `AND ( T.accepted_applicant=` +
+        userId +
+        `OR T.task_owner=` +
+        userId +
+        `)`
+    )
+    .then(results => (length = results.rows.length))
+    .catch(err => console.log(err))
+  if (length === 1) {
+    return true
+  }
+  return false
+}
+
 exports.checkApplicantSubmission = async (taskId, accepedApplicant) => {
   let length
   await client

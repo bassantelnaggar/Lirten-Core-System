@@ -36,23 +36,25 @@ exports.checkMeetingDate = async (res, date) => {
   }
 }
 
-exports.editTask = async (res, meetingId, dataToEdit) => {
+exports.editMeeting = async (res, meetingId, dataToEdit) => {
   let noEditData = []
   for (let i = 0; i < dataToEdit.length; i++) {
-    switch (dataToEdit[i][0]) {
-      case 'meetingTitle':
-      case 'location':
-      case 'date':
-        await client.query(
-          `UPDATE MEETINGS M SET ` +
-            dataToEdit[i][0]`='` +
-            dataToEdit[i][1] +
-            "'" +
-            `  WHERE M.id=` +
-            meetingId
-        )
-      default:
-        noEditData += dataToEdit[i][0]
+    if (
+      dataToEdit[i][0] === 'meeting_title' ||
+      dataToEdit[i][0] === 'date' ||
+      dataToEdit[i][0] === 'location'
+    ) {
+      await client.query(
+        `UPDATE MEETINGS M SET ` +
+          dataToEdit[i][0] +
+          `='` +
+          dataToEdit[i][1] +
+          "'" +
+          `  WHERE M.id=` +
+          meetingId
+      )
+    } else {
+      noEditData += dataToEdit[i][0]
     }
   }
   if (noEditData.length === 0) {
@@ -113,14 +115,10 @@ exports.attendingMeeting = async (res, attendeeId, meetingId, status) => {
   res.json('Confirmation staus has been updated')
 }
 
-exports.createMeeting = async (
-  res,
-  meetingTitle,
-  location,
-  date,
-  organizer
-) => {
+exports.createMeeting = async (meetingTitle, location, date, organizer) => {
   let id
+  let length
+  let meetingId
   await client
     .query(`SELECT id FROM MEETINGS ORDER BY id DESC LIMIT 1`)
     .then(results =>
@@ -149,13 +147,44 @@ exports.createMeeting = async (
         "'" +
         `)`
     )
+    .then(async () => {
+      await client
+        .query(`SELECT * FROM MEETINGS M  WHERE M.id=` + "'" + id + "'")
+        .then(results => [
+          (length = results.rows.length),
+          (meetingId = results.rows[0].id)
+        ])
+        .catch(err => console.log(err))
+    })
+  if (length === 1) {
+    return meetingId
+  }
+  return null
+}
+
+exports.organizeMeeting = async (res, meetingId, taskId, attendeeId) => {
+  await client
+    .query(
+      ` INSERT INTO TaskMeetings VALUES (` +
+        taskId +
+        `,` +
+        "'" +
+        meetingId +
+        "'," +
+        "'" +
+        attendeeId +
+        "'" +
+        `)`
+    )
     .then(() =>
       client
         .query(
-          `SELECT id,meeting_title,location,date,organizer FROM MEETINGS M WHERE M.id=` +
+          `SELECT task_id,meeting_id,attendee_id FROM TaskMeetings TM WHERE TM.meeting_id=` +
             "'" +
-            id +
-            "'"
+            meetingId +
+            "'" +
+            ` AND TM.attendee_id=` +
+            attendeeId
         )
         .then(results => res.status(200).json(results.rows))
         .catch(err => console.log(err))
