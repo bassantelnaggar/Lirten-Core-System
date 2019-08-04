@@ -7,6 +7,15 @@ const connectionString = process.env.DATABASE_URL
 const client = new pg.Client(connectionString)
 const { createTables } = require('./api/scripts/tablesCreationScript')
 const { populateTables } = require('./api/scripts/populationScript')
+let MongoClient = require('mongodb').MongoClient
+
+MongoClient.connect(
+  `mongodb+srv://${process.env.MONGO_ATLAS_USER}:${
+    process.env.MONGO_ATLAS_PASSWORD
+  }@trail-mflro.mongodb.net/mydb`
+)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.log(err))
 
 // import route handlers
 

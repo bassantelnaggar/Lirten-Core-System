@@ -3,7 +3,7 @@ const taskFunctions = require('../helpers/functions/task.function')
 const userFunctions = require('../helpers/functions/user.function')
 
 exports.createMeeting = async (req, res) => {
-  const { meetingTitle, location, date, organizer, userTasks } = req.body
+  const { meetingTitle, location, date, organizer, userTasks } = req.body.body
   if (await meetingFunctions.checkMeetingDate(res, date)) {
     if (await userFunctions.checkUser(res, organizer)) {
       if (await userFunctions.checkSuspension(res, organizer)) {
@@ -40,7 +40,7 @@ exports.createMeeting = async (req, res) => {
 }
 
 exports.editMeeting = async (req, res) => {
-  const { meetingId, dataToEdit } = req.body
+  const { meetingId, dataToEdit } = req.body.body
   if (await meetingFunctions.meetingExists(meetingId)) {
     if (
       !(await meetingFunctions.checkMeetingConfirmationStatus(res, meetingId))
@@ -51,7 +51,7 @@ exports.editMeeting = async (req, res) => {
 }
 
 exports.confirmAttending = async (req, res) => {
-  const { meetingId, attendeeId, confirmed } = req.body
+  const { meetingId, attendeeId, confirmed } = req.body.body
   if (await userFunctions.checkUser(res, attendeeId)) {
     if (await userFunctions.checkSuspension(res, attendeeId)) {
       await meetingFunctions.attendingMeeting(
