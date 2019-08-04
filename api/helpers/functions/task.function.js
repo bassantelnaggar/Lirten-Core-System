@@ -58,8 +58,6 @@ exports.checkDeadline = async (res, date) => {
     currentMonth = '0' + currentMonth
   }
   currentDate = currentYear + '-' + currentMonth + '-' + currentDay
-  console.log(date)
-  console.log(currentDate < date)
   if (currentDate < date) {
     return true
   } else {
@@ -248,4 +246,64 @@ exports.confirmTask = async (res, taskId, confirmed) => {
     `UPDATE TASKS T SET confirmed =` + confirmed + `  WHERE T.id=` + taskId
   )
   res.json('Task confirmed successfully')
+}
+
+exports.editTask = async (res, taskId, dataToEdit) => {
+  let noEditData = []
+  for (let i = 0; i < dataToEdit.length; i++) {
+    if (dataToEdit[i][0] === 'taskName') {
+      await client.query(
+        `UPDATE TASKS T SET task_name ='` +
+          dataToEdit[i][1] +
+          "'" +
+          `  WHERE T.id=` +
+          taskId
+      )
+    } else {
+      if (dataToEdit[i][0] === 'deadline') {
+        await client.query(
+          `UPDATE TASKS T SET deadline ='` +
+            dataToEdit[i][1] +
+            "'" +
+            `  WHERE T.id=` +
+            taskId
+        )
+      } else {
+        noEditData += dataToEdit[i][0]
+      }
+    }
+  }
+  if (noEditData.length === 0) {
+    res.json('Task updated successfully')
+  } else {
+    res.json(noEditData + ' can not be edited')
+  }
+}
+
+exports.sortFilteredTasks = async (res, page, limit, filter, sortBy) => {
+  const query = filter.map(condition => {
+    if (condition.filterBy === 'task_name' || condition.filterBy === 'deadline')
+      return condition.filterBy + '=' + "'" + condition.feature + "'"
+    else return condition.filterBy + '=' + condition.feature
+  })
+  let sqlQuery = ''
+  for (let i = 0; i < query.length; i++) {
+    if (i === query.length - 1) sqlQuery = sqlQuery + query[i]
+    else sqlQuery = sqlQuery + query[i] + ' AND '
+  }
+  client
+    .query(
+      `SELECT * FROM TASKS WHERE ` +
+        sqlQuery +
+        ` ORDER BY ` +
+        sortBy[0] +
+        ' ' +
+        sortBy[1] +
+        ` LIMIT ` +
+        limit +
+        `OFFSET ` +
+        page
+    )
+    .then(results => res.status(200).json(results.rows))
+    .catch(err => console.log(err))
 }

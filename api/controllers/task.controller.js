@@ -103,3 +103,17 @@ exports.confirmTask = async (req, res) => {
     }
   }
 }
+
+exports.editTask = async (req, res) => {
+  const { taskId, dataToEdit } = req.body
+  if (await taskFunctions.taskExists(taskId)) {
+    if (!(await taskFunctions.checkAcceptedApplicant(res, taskId))) {
+      await taskFunctions.editTask(res, taskId, dataToEdit)
+    }
+  }
+}
+
+exports.sortFilteredTasks = async (req, res) => {
+  const { page, limit, filter, sortBy } = req.body
+  await taskFunctions.sortFilteredTasks(res, page, limit, filter, sortBy)
+}
