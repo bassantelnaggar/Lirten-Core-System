@@ -61,7 +61,12 @@ exports.checkDeadline = async (res, date) => {
   if (currentDate < date) {
     return true
   } else {
-    res.json('Deadline is behind')
+    res.json({
+      header: {
+        statusCode: '0201',
+        timestamp: new Date()
+      }
+    })
     return false
   }
 }
@@ -113,7 +118,12 @@ exports.checkTaskConfirmation = async (res, taskId) => {
     .then(results => (confirmation = results.rows[0].confirmed))
     .catch(err => console.log(err))
   if (confirmation) {
-    res.json('Task has been confirmed before')
+    res.json({
+      header: {
+        statusCode: '0209',
+        timestamp: new Date()
+      }
+    })
     return true
   }
   return false
@@ -138,9 +148,19 @@ exports.freezeTask = async (res, taskId, status) => {
   )
 
   if (status) {
-    res.json('Task frozen successfully')
+    res.json({
+      header: {
+        statusCode: '0203',
+        timestamp: new Date()
+      }
+    })
   } else {
-    res.json('Task unfrozen successfully')
+    res.json({
+      header: {
+        statusCode: '0204',
+        timestamp: new Date()
+      }
+    })
   }
 }
 
@@ -168,7 +188,12 @@ exports.checkAcceptedApplicant = async (res, taskId) => {
     .then(results => (acceptedApplicant = results.rows[0].accepted_applicant))
     .catch(err => console.log(err))
   if (acceptedApplicant !== null) {
-    res.json('Task has an accepted applicant')
+    res.json({
+      header: {
+        statusCode: '0211',
+        timestamp: new Date()
+      }
+    })
     return true
   }
   return false
@@ -207,7 +232,12 @@ exports.checkSubmissionStatus = async (res, taskId) => {
     .then(results => (taskSubmission = results.rows[0].submission))
     .catch(err => console.log(err))
   if (taskSubmission !== null) {
-    res.json(`The task has already been submitted`)
+    res.json({
+      header: {
+        statusCode: '0214',
+        timestamp: new Date()
+      }
+    })
     return true
   }
   return false
@@ -230,6 +260,12 @@ exports.checkUserTask = async (taskId, userId) => {
   if (length === 1) {
     return true
   }
+  res.json({
+    header: {
+      statusCode: '0301',
+      timestamp: new Date()
+    }
+  })
   return false
 }
 
@@ -296,7 +332,12 @@ exports.editTask = async (res, taskId, dataToEdit) => {
   if (noEditData.length === 0) {
     res.json('Task updated successfully')
   } else {
-    res.json(noEditData + ' can not be edited')
+    res.json({
+      header: {
+        statusCode: '0215',
+        timestamp: new Date()
+      }
+    })
   }
 }
 

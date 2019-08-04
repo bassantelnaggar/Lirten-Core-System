@@ -10,11 +10,22 @@ client.connect()
 exports.getUsers = res => {
   client
     .query(`SELECT * FROM USERS `)
-    .then(results => res.status(200).json(results.rows))
+    .then(results =>
+      res.json({
+        header: {
+          statusCode: '0000',
+          requestId: 'A-123',
+          timestamp: new Date()
+        },
+        body: {
+          user: results.rows
+        }
+      })
+    )
     .catch(err => console.log(err))
 }
 
-exports.checkUsername = async username => {
+exports.checkUsername = async (res, username) => {
   let length
   await client
     .query(`SELECT * FROM USERS U  WHERE U.username=` + "'" + username + "'")
@@ -24,10 +35,16 @@ exports.checkUsername = async username => {
   if (length === 0) {
     return true
   }
+  res.json({
+    header: {
+      statusCode: '0101',
+      timestamp: new Date()
+    }
+  })
   return false
 }
 
-exports.checkEmail = async email => {
+exports.checkEmail = async (res, email) => {
   let length
   await client
     .query(`SELECT * FROM USERS U  WHERE U.email=` + "'" + email + "'")
@@ -37,11 +54,23 @@ exports.checkEmail = async email => {
   if (length === 0) {
     return true
   }
+  res.json({
+    header: {
+      statusCode: '0102',
+      timestamp: new Date()
+    }
+  })
   return false
 }
 
-exports.checkPassword = password => {
+exports.checkPassword = (res, password) => {
   if (password.length < 8) {
+    res.json({
+      header: {
+        statusCode: '0103',
+        timestamp: new Date()
+      }
+    })
     return false
   }
   return true
@@ -81,7 +110,18 @@ exports.createUser = async (res, username, email, password) => {
         .query(
           `SELECT id,username,email FROM USERS U WHERE U.id=` + "'" + id + "'"
         )
-        .then(results => res.status(200).json(results.rows))
+        .then(results =>
+          res.json({
+            header: {
+              statusCode: '0000',
+              requestId: 'A-123',
+              timestamp: new Date()
+            },
+            body: {
+              user: results.rows
+            }
+          })
+        )
         .catch(err => console.log(err))
     )
 }
@@ -155,16 +195,71 @@ exports.checkSuspension = async (res, userId) => {
     .query(`SELECT * FROM USERS U WHERE U.id=` + userId)
     .then(results => (suspension = results.rows[0].suspended))
     .catch(err => console.log(err))
-  if (suspension) {
+  if (!suspension) {
     return true
+  } else {
+    res.json({
+      header: {
+        statusCode: '0106',
+        timestamp: new Date()
+      }
+    })
+    return false
   }
-  return false
 }
 
-exports.userSuspension = async (userId, status) => {
+exports.checkAlreadySuspended = async (res, userId) => {
+  let suspension
+  await client
+    .query(`SELECT * FROM USERS U WHERE U.id=` + userId)
+    .then(results => (suspension = results.rows[0].suspended))
+    .catch(err => console.log(err))
+  if (!suspension) {
+    return true
+  } else {
+    res.json({
+      header: {
+        statusCode: '0108',
+        timestamp: new Date()
+      }
+    })
+    return false
+  }
+}
+
+exports.checkAlreadyUnsuspended = async (res, userId) => {
+  let suspension
+  await client
+    .query(`SELECT * FROM USERS U WHERE U.id=` + userId)
+    .then(results => (suspension = results.rows[0].suspended))
+    .catch(err => console.log(err))
+  if (suspension) {
+    return true
+  } else {
+    res.json({
+      header: {
+        statusCode: '0109',
+        timestamp: new Date()
+      }
+    })
+    return false
+  }
+}
+
+exports.userSuspension = async (res, userId, status) => {
   await client.query(
     `UPDATE USERS U SET suspended =` + status + `  WHERE U.id=` + userId
   )
+  res.json({
+    header: {
+      statusCode: '0000',
+      requestId: 'A-123',
+      timestamp: new Date()
+    },
+    body: {
+      message: 'Suspension status has been updated successfully'
+    }
+  })
 }
 
 exports.signin = async (res, email) => {
@@ -179,5 +274,14 @@ exports.signin = async (res, email) => {
   }
   const token = jwt.sign(payload, tokenKey, { expiresIn: '1h' })
   store.set('token', token)
-  await res.json({ token: `Bearer ${token}` })
+  await res.json({
+    header: {
+      statusCode: '0000',
+      requestId: 'A-123',
+      timestamp: new Date()
+    },
+    body: {
+      token: `Bearer ${token}`
+    }
+  })
 }
