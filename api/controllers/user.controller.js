@@ -1,38 +1,17 @@
 const userFunctions = require('../helpers/functions/user.function')
 
-exports.get_users = async res => {
+exports.get_users = async (req, res) => {
   userFunctions.getUsers(res)
 }
 
 exports.signup = async (req, res) => {
   const { username, email, password } = req.body
-  if (await userFunctions.checkUsername(username)) {
-    if (await userFunctions.checkEmail(email)) {
-      if (await userFunctions.checkPassword(password)) {
+  if (await userFunctions.checkUsername(res, username)) {
+    if (await userFunctions.checkEmail(res, email)) {
+      if (await userFunctions.checkPassword(res, password)) {
         await userFunctions.createUser(res, username, email, password)
-      } else {
-        res.json({
-          header: {
-            statusCode: '0103',
-            timestamp: new Date()
-          }
-        })
       }
-    } else {
-      res.json({
-        header: {
-          statusCode: '0102',
-          timestamp: new Date()
-        }
-      })
     }
-  } else {
-    res.json({
-      header: {
-        statusCode: '0101',
-        timestamp: new Date()
-      }
-    })
   }
 }
 
@@ -40,15 +19,8 @@ exports.signin = async (req, res) => {
   const { email, password } = req.body
   if (await userFunctions.checkAccount(res, email, password)) {
     const userId = await userFunctions.getUserId(email)
-    if (!(await userFunctions.checkSuspension(res, userId))) {
+    if (await userFunctions.checkSuspension(res, userId)) {
       await userFunctions.signin(res, email)
-    } else {
-      res.json({
-        header: {
-          statusCode: '0106',
-          timestamp: new Date()
-        }
-      })
     }
   }
 }
@@ -57,38 +29,12 @@ exports.suspendUser = async (req, res) => {
   const { userId, status } = req.body
   if (await userFunctions.checkUser(userId)) {
     if (status) {
-      if (!(await userFunctions.checkSuspension(res, userId))) {
-        await userFunctions.userSuspension(userId, status)
-        res.json({
-          header: {
-            statusCode: '0106',
-            timestamp: new Date()
-          }
-        })
-      } else {
-        res.json({
-          header: {
-            statusCode: '0108',
-            timestamp: new Date()
-          }
-        })
+      if (await userFunctions.checkAlreadySuspended(res, userId)) {
+        await userFunctions.userSuspension(res, userId, status)
       }
     } else {
-      if (await userFunctions.checkSuspension(res, userId)) {
-        await userFunctions.userSuspension(userId, status)
-        res.json({
-          header: {
-            statusCode: '0107',
-            timestamp: new Date()
-          }
-        })
-      } else {
-        res.json({
-          header: {
-            statusCode: '0109',
-            timestamp: new Date()
-          }
-        })
+      if (await userFunctions.checkAlreadyUnsuspended(res, userId)) {
+        await userFunctions.userSuspension(res, userId, status)
       }
     }
   }

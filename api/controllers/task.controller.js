@@ -44,7 +44,7 @@ exports.applyTask = async (req, res) => {
     // if (await taskFunctions.checkDeadline(res, deadline)) {
     if (!(await taskFunctions.checkAcceptedApplicant(taskId))) {
       if (await userFunctions.checkUser(applicantId)) {
-        if (!(await userFunctions.checkSuspension(res, applicantId))) {
+        if (await userFunctions.checkSuspension(res, applicantId)) {
           if (
             await taskFunctions.checkTaskApplyingStatus(taskId, applicantId)
           ) {
@@ -64,7 +64,7 @@ exports.acceptApplicant = async (req, res) => {
     // if (await taskFunctions.checkDeadline(res, deadline)) {
     if (!(await taskFunctions.checkAcceptedApplicant(res, taskId))) {
       if (await userFunctions.checkUser(applicantId)) {
-        if (!(await userFunctions.checkSuspension(res, applicantId))) {
+        if (await userFunctions.checkSuspension(res, applicantId)) {
           await taskFunctions.acceptApplicant(res, taskId, applicantId)
         }
       }
@@ -78,7 +78,7 @@ exports.submitTask = async (req, res) => {
   if (await taskFunctions.taskExists(taskId)) {
     // if (await taskFunctions.checkDeadline(res, deadline)) {
     if (await userFunctions.checkUser(acceptApplicant)) {
-      if (!(await userFunctions.checkSuspension(res, acceptApplicant))) {
+      if (await userFunctions.checkSuspension(res, acceptApplicant)) {
         if (!(await taskFunctions.checkSubmissionStatus(res, taskId))) {
           if (
             await taskFunctions.checkApplicantSubmission(
