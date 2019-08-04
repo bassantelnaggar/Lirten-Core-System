@@ -63,7 +63,16 @@ exports.editMeeting = async (res, meetingId, dataToEdit) => {
     }
   }
   if (noEditData.length === 0) {
-    res.json('Meeting updated successfully')
+    res.json({
+      header: {
+        statusCode: '0000',
+        requestId: 'A-123',
+        timestamp: new Date()
+      },
+      body: {
+        message: 'Meeting updated successfully'
+      }
+    })
   } else {
     res.json({
       header: {
@@ -86,14 +95,10 @@ exports.checkMeetingConfirmationStatus = async meetingId => {
   return false
 }
 
-exports.confirmMeeting = async (res, meetingId) => {
+exports.confirmMeeting = async (res, meetingId, status) => {
   await client.query(
-    `UPDATE MEETINGS M SET confirmed =` +
-      confirmed +
-      `  WHERE M.id=` +
-      meetingId
+    `UPDATE MEETINGS M SET confirmed = ` + status + `  WHERE M.id=` + meetingId
   )
-  res.json('Meeting confirmed successfully')
 }
 
 exports.checkAttendeeConfirmation = async (attendeeId, meetingId) => {
@@ -122,7 +127,16 @@ exports.attendingMeeting = async (res, attendeeId, meetingId, status) => {
       ` AND TM.attendee_id=` +
       attendeeId
   )
-  res.json('Confirmation staus has been updated')
+  res.json({
+    header: {
+      statusCode: '0000',
+      requestId: 'A-123',
+      timestamp: new Date()
+    },
+    body: {
+      message: 'Confirmation staus has been updated'
+    }
+  })
 }
 
 exports.createMeeting = async (meetingTitle, location, date, organizer) => {
@@ -196,7 +210,41 @@ exports.organizeMeeting = async (res, meetingId, taskId, attendeeId) => {
             ` AND TM.attendee_id=` +
             attendeeId
         )
-        .then(results => res.status(200).json(results.rows))
+        .then(results =>
+          res.json({
+            header: {
+              statusCode: '0000',
+              requestId: 'A-123',
+              timestamp: new Date()
+            },
+            body: {
+              user: results.rows
+            }
+          })
+        )
         .catch(err => console.log(err))
     )
+}
+
+exports.attendeeNumber = async meetingId => {
+  let invitedUsers
+  let confirmedUsers
+  await client
+    .query(`SELECT * FROM TASKMEETINGS WHERE meeting_id= ` + meetingId)
+    .then(results => (invitedUsers = results.rows.length))
+    .catch(err => console.log(err))
+
+  await client
+    .query(
+      `SELECT * FROM TASKMEETINGS WHERE meeting_id= ` +
+        meetingId +
+        ` AND confirmation= true`
+    )
+    .then(async results => (confirmedUsers = results.rows.length))
+    .catch(err => console.log(err))
+  console.log(invitedUsers)
+  console.log(confirmedUsers)
+
+  if (invitedUsers === confirmedUsers) return true
+  else return false
 }
