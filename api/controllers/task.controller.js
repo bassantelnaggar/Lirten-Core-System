@@ -18,7 +18,7 @@ exports.viewTaskList = async (req, res) => {
 }
 
 exports.viewMyTasks = async (req, res) => {
-  const { userId } = req.body
+  const { userId } = req.body.body
   await taskFunctions.viewMyTasks(res, userId)
 }
 
