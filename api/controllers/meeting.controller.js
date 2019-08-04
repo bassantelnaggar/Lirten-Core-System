@@ -5,31 +5,37 @@ const userFunctions = require('../helpers/functions/user.function')
 exports.createMeeting = async (req, res) => {
   const { meetingTitle, location, date, organizer, userTasks } = req.body
   if (await meetingFunctions.checkMeetingDate(res, date)) {
-    const meetingId = await meetingFunctions.createMeeting(
-      meetingTitle,
-      location,
-      date,
-      organizer
-    )
-    await userTasks.map(async condition => {
-      if (await userFunctions.checkUser(condition.attendeeId)) {
-        if (await userFunctions.checkSuspension(res, condition.attendeeId)) {
-          if (
-            await taskFunctions.checkUserTask(
-              condition.taskId,
-              condition.attendeeId
-            )
-          ) {
-            await meetingFunctions.organizeMeeting(
-              res,
-              meetingId,
-              condition.taskId,
-              condition.attendeeId
-            )
+    if (await userFunctions.checkUser(res, organizer)) {
+      if (await userFunctions.checkSuspension(res, organizer)) {
+        const meetingId = await meetingFunctions.createMeeting(
+          meetingTitle,
+          location,
+          date,
+          organizer
+        )
+        await userTasks.map(async condition => {
+          if (await userFunctions.checkUser(res, condition.attendeeId)) {
+            if (
+              await userFunctions.checkSuspension(res, condition.attendeeId)
+            ) {
+              if (
+                await taskFunctions.checkUserTask(
+                  condition.taskId,
+                  condition.attendeeId
+                )
+              ) {
+                await meetingFunctions.organizeMeeting(
+                  res,
+                  meetingId,
+                  condition.taskId,
+                  condition.attendeeId
+                )
+              }
+            }
           }
-        }
+        })
       }
-    })
+    }
   }
 }
 
@@ -46,7 +52,7 @@ exports.editMeeting = async (req, res) => {
 
 exports.confirmAttending = async (req, res) => {
   const { meetingId, attendeeId, confirmed } = req.body
-  if (await userFunctions.checkUser(attendeeId)) {
+  if (await userFunctions.checkUser(res, attendeeId)) {
     if (await userFunctions.checkSuspension(res, attendeeId)) {
       await meetingFunctions.attendingMeeting(
         res,
@@ -54,6 +60,11 @@ exports.confirmAttending = async (req, res) => {
         meetingId,
         confirmed
       )
+    }
+    if (await meetingFunctions.attendeeNumber(meetingId)) {
+      await meetingFunctions.confirmMeeting(res, meetingId, true)
+    } else {
+      await meetingFunctions.confirmMeeting(res, meetingId, false)
     }
   }
 }

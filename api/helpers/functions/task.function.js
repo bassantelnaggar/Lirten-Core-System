@@ -29,11 +29,22 @@ exports.getTaskDeadline = async taskId => {
 exports.viewMyTasks = async (res, userId) => {
   client
     .query(`SELECT * FROM TASKS T WHERE T.accepted_applicant=` + userId)
-    .then(results => res.status(200).json(results.rows))
+    .then(results =>
+      res.json({
+        header: {
+          statusCode: '0000',
+          requestId: 'A-123',
+          timestamp: new Date()
+        },
+        body: {
+          user: results.rows
+        }
+      })
+    )
     .catch(err => console.log(err))
 }
 
-exports.taskExists = async taskId => {
+exports.taskExists = async (res, taskId) => {
   let length
   await client
     .query(`SELECT * FROM TASKS T WHERE T.id=` + taskId)
@@ -43,6 +54,12 @@ exports.taskExists = async taskId => {
   if (length === 1) {
     return true
   }
+  res.json({
+    header: {
+      statusCode: '0200',
+      timestamp: new Date()
+    }
+  })
   return false
 }
 
@@ -106,7 +123,18 @@ exports.createTask = async (res, taskName, taskOwner, deadline) => {
             id +
             "'"
         )
-        .then(results => res.status(200).json(results.rows))
+        .then(results =>
+          res.json({
+            header: {
+              statusCode: '0000',
+              requestId: 'A-123',
+              timestamp: new Date()
+            },
+            body: {
+              user: results.rows
+            }
+          })
+        )
         .catch(err => console.log(err))
     )
 }
@@ -142,26 +170,57 @@ exports.checkFrozenTask = async taskId => {
   return false
 }
 
+exports.checkAlreadyFrozenTask = async (res, taskId) => {
+  let frozen
+  await client
+    .query(`SELECT * FROM TASKS T WHERE T.id=` + taskId)
+    .then(results => (frozen = results.rows[0].frozen))
+    .catch(err => console.log(err))
+  if (!frozen) {
+    return true
+  }
+  res.json({
+    header: {
+      statusCode: '0205',
+      timestamp: new Date()
+    }
+  })
+  return false
+}
+
+exports.checkAlreadyUnfrozenTask = async (res, taskId) => {
+  let frozen
+  await client
+    .query(`SELECT * FROM TASKS T WHERE T.id=` + taskId)
+    .then(results => (frozen = results.rows[0].frozen))
+    .catch(err => console.log(err))
+  if (frozen) {
+    return true
+  }
+  res.json({
+    header: {
+      statusCode: '0206',
+      timestamp: new Date()
+    }
+  })
+  return false
+}
+
 exports.freezeTask = async (res, taskId, status) => {
   await client.query(
     `UPDATE TASKS T SET frozen = ` + status + ` WHERE T.id= ` + taskId
   )
 
-  if (status) {
-    res.json({
-      header: {
-        statusCode: '0203',
-        timestamp: new Date()
-      }
-    })
-  } else {
-    res.json({
-      header: {
-        statusCode: '0204',
-        timestamp: new Date()
-      }
-    })
-  }
+  res.json({
+    header: {
+      statusCode: '0000',
+      requestId: 'A-123',
+      timestamp: new Date()
+    },
+    body: {
+      message: 'frozen status has been updated successfully'
+    }
+  })
 }
 
 exports.checkTaskApplyingStatus = async (taskId, userId) => {
@@ -210,7 +269,18 @@ exports.applyTask = async (res, taskId, userId) => {
             `AND TP.applicant_id=` +
             userId
         )
-        .then(results => res.status(200).json(results.rows))
+        .then(results =>
+          res.json({
+            header: {
+              statusCode: '0000',
+              requestId: 'A-123',
+              timestamp: new Date()
+            },
+            body: {
+              user: results.rows
+            }
+          })
+        )
         .catch(err => console.log(err))
     )
 }
@@ -222,7 +292,16 @@ exports.acceptApplicant = async (res, taskId, userId) => {
       `  WHERE T.id=` +
       taskId
   )
-  res.json('User has been accepted')
+  res.json({
+    header: {
+      statusCode: '0000',
+      requestId: 'A-123',
+      timestamp: new Date()
+    },
+    body: {
+      message: 'User has been accepted'
+    }
+  })
 }
 
 exports.checkSubmissionStatus = async (res, taskId) => {
@@ -294,14 +373,32 @@ exports.submitTask = async (res, taskId, submission) => {
       `  WHERE T.id=` +
       taskId
   )
-  res.json('Task has been submitted')
+  res.json({
+    header: {
+      statusCode: '0000',
+      requestId: 'A-123',
+      timestamp: new Date()
+    },
+    body: {
+      message: 'Task has been submitted'
+    }
+  })
 }
 
 exports.confirmTask = async (res, taskId, confirmed) => {
   await client.query(
     `UPDATE TASKS T SET confirmed =` + confirmed + `  WHERE T.id=` + taskId
   )
-  res.json('Task confirmed successfully')
+  res.json({
+    header: {
+      statusCode: '0000',
+      requestId: 'A-123',
+      timestamp: new Date()
+    },
+    body: {
+      message: 'Task confirmed successfully'
+    }
+  })
 }
 
 exports.editTask = async (res, taskId, dataToEdit) => {
@@ -330,7 +427,16 @@ exports.editTask = async (res, taskId, dataToEdit) => {
     }
   }
   if (noEditData.length === 0) {
-    res.json('Task updated successfully')
+    res.json({
+      header: {
+        statusCode: '0000',
+        requestId: 'A-123',
+        timestamp: new Date()
+      },
+      body: {
+        message: 'Task updated successfully'
+      }
+    })
   } else {
     res.json({
       header: {
@@ -365,6 +471,17 @@ exports.sortFilteredTasks = async (res, page, limit, filter, sortBy) => {
         `OFFSET ` +
         page
     )
-    .then(results => res.status(200).json(results.rows))
+    .then(results =>
+      res.json({
+        header: {
+          statusCode: '0000',
+          requestId: 'A-123',
+          timestamp: new Date()
+        },
+        body: {
+          user: results.rows
+        }
+      })
+    )
     .catch(err => console.log(err))
 }

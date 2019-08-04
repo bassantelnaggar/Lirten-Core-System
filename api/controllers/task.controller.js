@@ -4,7 +4,11 @@ const userFunctions = require('../helpers/functions/user.function')
 exports.createTask = async (req, res) => {
   const { taskName, taskOwner, deadline } = req.body
   if (await taskFunctions.checkDeadline(res, deadline)) {
-    await taskFunctions.createTask(res, taskName, taskOwner, deadline)
+    if (await userFunctions.checkUser(res, taskOwner)) {
+      if (await userFunctions.checkSuspension(res, taskOwner)) {
+        await taskFunctions.createTask(res, taskName, taskOwner, deadline)
+      }
+    }
   }
 }
 
@@ -20,17 +24,13 @@ exports.viewMyTasks = async (req, res) => {
 
 exports.freezeTask = async (req, res) => {
   const { taskId, frozen } = req.body
-  if (await taskFunctions.taskExists(taskId)) {
+  if (await taskFunctions.taskExists(res, taskId)) {
     if (frozen) {
-      if (await taskFunctions.checkFrozenTask(taskId)) {
-        res.json('Task already frozen')
-      } else {
+      if (await taskFunctions.checkAlreadyFrozenTask(res, taskId)) {
         await taskFunctions.freezeTask(res, taskId, frozen)
       }
     } else {
-      if (!(await taskFunctions.checkFrozenTask(taskId))) {
-        res.json('Task already unfrozen')
-      } else {
+      if (await taskFunctions.checkAlreadyUnfrozenTask(res, taskId)) {
         await taskFunctions.freezeTask(res, taskId, frozen)
       }
     }
@@ -39,11 +39,11 @@ exports.freezeTask = async (req, res) => {
 
 exports.applyTask = async (req, res) => {
   const { taskId, applicantId } = req.body
-  if (await taskFunctions.taskExists(taskId)) {
+  if (await taskFunctions.taskExists(res, taskId)) {
     let deadline = await taskFunctions.getTaskDeadline(taskId)
     // if (await taskFunctions.checkDeadline(res, deadline)) {
-    if (!(await taskFunctions.checkAcceptedApplicant(taskId))) {
-      if (await userFunctions.checkUser(applicantId)) {
+    if (!(await taskFunctions.checkAcceptedApplicant(res, taskId))) {
+      if (await userFunctions.checkUser(res, applicantId)) {
         if (await userFunctions.checkSuspension(res, applicantId)) {
           if (
             await taskFunctions.checkTaskApplyingStatus(taskId, applicantId)
@@ -59,11 +59,11 @@ exports.applyTask = async (req, res) => {
 
 exports.acceptApplicant = async (req, res) => {
   const { taskId, applicantId } = req.body
-  if (await taskFunctions.taskExists(taskId)) {
+  if (await taskFunctions.taskExists(res, taskId)) {
     let deadline = await taskFunctions.getTaskDeadline(taskId)
     // if (await taskFunctions.checkDeadline(res, deadline)) {
     if (!(await taskFunctions.checkAcceptedApplicant(res, taskId))) {
-      if (await userFunctions.checkUser(applicantId)) {
+      if (await userFunctions.checkUser(res, applicantId)) {
         if (await userFunctions.checkSuspension(res, applicantId)) {
           await taskFunctions.acceptApplicant(res, taskId, applicantId)
         }
@@ -74,16 +74,16 @@ exports.acceptApplicant = async (req, res) => {
 }
 
 exports.submitTask = async (req, res) => {
-  const { taskId, acceptApplicant, submission } = req.body
-  if (await taskFunctions.taskExists(taskId)) {
+  const { taskId, acceptedApplicant, submission } = req.body
+  if (await taskFunctions.taskExists(res, taskId)) {
     // if (await taskFunctions.checkDeadline(res, deadline)) {
-    if (await userFunctions.checkUser(acceptApplicant)) {
-      if (await userFunctions.checkSuspension(res, acceptApplicant)) {
+    if (await userFunctions.checkUser(res, acceptedApplicant)) {
+      if (await userFunctions.checkSuspension(res, acceptedApplicant)) {
         if (!(await taskFunctions.checkSubmissionStatus(res, taskId))) {
           if (
             await taskFunctions.checkApplicantSubmission(
               taskId,
-              acceptApplicant
+              acceptedApplicant
             )
           ) {
             await taskFunctions.submitTask(res, taskId, submission)
@@ -97,8 +97,8 @@ exports.submitTask = async (req, res) => {
 
 exports.confirmTask = async (req, res) => {
   const { taskId, confirmed } = req.body
-  if (await taskFunctions.taskExists(taskId)) {
-    if (!taskFunctions.checkTaskConfirmation(res, taskId)) {
+  if (await taskFunctions.taskExists(res, taskId)) {
+    if (!(await taskFunctions.checkTaskConfirmation(res, taskId))) {
       await taskFunctions.confirmTask(res, taskId, confirmed)
     }
   }
@@ -106,7 +106,7 @@ exports.confirmTask = async (req, res) => {
 
 exports.editTask = async (req, res) => {
   const { taskId, dataToEdit } = req.body
-  if (await taskFunctions.taskExists(taskId)) {
+  if (await taskFunctions.taskExists(res, taskId)) {
     if (!(await taskFunctions.checkAcceptedApplicant(res, taskId))) {
       await taskFunctions.editTask(res, taskId, dataToEdit)
     }
