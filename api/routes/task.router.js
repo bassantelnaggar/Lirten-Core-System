@@ -10,5 +10,7 @@ router.post('/applyTask/v1', taskController.applyTask)
 router.post('/acceptApplicant/v1', taskController.acceptApplicant)
 router.post('/submitTask/v1', taskController.submitTask)
 router.post('/confirmTask/v1', taskController.confirmTask)
+router.post('/editTask/v1', taskController.editTask)
+router.post('/sortFilteredTasks/v1', taskController.sortFilteredTasks)
 
 module.exports = router
