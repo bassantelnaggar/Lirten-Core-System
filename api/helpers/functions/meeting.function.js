@@ -31,7 +31,12 @@ exports.checkMeetingDate = async (res, date) => {
   if (currentDate < date) {
     return true
   } else {
-    res.json('Date is behind')
+    res.json({
+      header: {
+        statusCode: '0302',
+        timestamp: new Date()
+      }
+    })
     return false
   }
 }
@@ -60,7 +65,12 @@ exports.editMeeting = async (res, meetingId, dataToEdit) => {
   if (noEditData.length === 0) {
     res.json('Meeting updated successfully')
   } else {
-    res.json(noEditData + ' can not be edited')
+    res.json({
+      header: {
+        statusCode: '0215',
+        timestamp: new Date()
+      }
+    })
   }
 }
 
