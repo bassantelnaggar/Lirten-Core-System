@@ -5,7 +5,7 @@ exports.get_users = async (req, res) => {
 }
 
 exports.signup = async (req, res) => {
-  const { username, email, password } = req.body
+  const { username, email, password } = req.body.body
   if (await userFunctions.checkUsername(res, username)) {
     if (await userFunctions.checkEmail(res, email)) {
       if (await userFunctions.checkPassword(res, password)) {
@@ -16,7 +16,7 @@ exports.signup = async (req, res) => {
 }
 
 exports.signin = async (req, res) => {
-  const { email, password } = req.body
+  const { email, password } = req.body.body
   if (await userFunctions.checkAccount(res, email, password)) {
     const userId = await userFunctions.getUserId(email)
     if (await userFunctions.checkSuspension(res, userId)) {
@@ -26,7 +26,7 @@ exports.signin = async (req, res) => {
 }
 
 exports.suspendUser = async (req, res) => {
-  const { userId, status } = req.body
+  const { userId, status } = req.body.body
   if (await userFunctions.checkUser(userId)) {
     if (status) {
       if (await userFunctions.checkAlreadySuspended(res, userId)) {
