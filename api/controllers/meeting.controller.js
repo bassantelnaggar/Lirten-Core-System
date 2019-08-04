@@ -61,7 +61,6 @@ exports.confirmAttending = async (req, res) => {
         confirmed
       )
     }
-    console.log(await meetingFunctions.attendeeNumber(meetingId))
     if (await meetingFunctions.attendeeNumber(meetingId)) {
       await meetingFunctions.confirmMeeting(res, meetingId, true)
     } else {

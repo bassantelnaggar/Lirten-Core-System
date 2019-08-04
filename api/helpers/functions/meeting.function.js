@@ -242,8 +242,6 @@ exports.attendeeNumber = async meetingId => {
     )
     .then(async results => (confirmedUsers = results.rows.length))
     .catch(err => console.log(err))
-  console.log(invitedUsers)
-  console.log(confirmedUsers)
 
   if (invitedUsers === confirmedUsers) return true
   else return false
