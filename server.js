@@ -7,15 +7,9 @@ const connectionString = process.env.DATABASE_URL
 const client = new pg.Client(connectionString)
 const { createTables } = require('./api/scripts/tablesCreationScript')
 const { populateTables } = require('./api/scripts/populationScript')
-let MongoClient = require('mongodb').MongoClient
-
-MongoClient.connect(
-  `mongodb+srv://${process.env.MONGO_ATLAS_USER}:${
-    process.env.MONGO_ATLAS_PASSWORD
-  }@trail-mflro.mongodb.net/mydb`
-)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.log(err))
+const mongoose = require('mongoose')
+let http = require('http').Server(app)
+let io = require('socket.io-client')(http)
 
 // import route handlers
 
@@ -55,5 +49,20 @@ app.use('/api/tasks', tasks)
 //Meeting routes
 app.use('/api/meetings', meetings)
 
+io.connect(
+  'http://127.0.0.1:8080',
+  { reconnect: true },
+  console.log('A user is connected')
+)
+
+mongoose
+  .connect(
+    `mongodb+srv://${process.env.MONGO_ATLAS_USER}:${
+      process.env.MONGO_ATLAS_PASSWORD
+    }@trail-mflro.mongodb.net/mydb`
+  )
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.log(err))
+
 const port = process.env.PORT || 5000
-app.listen(port, () => console.log(`Server up and running on ${port} 👍 .`))
+http.listen(port, () => console.log(`Server up and running on ${port} 👍 .`))
