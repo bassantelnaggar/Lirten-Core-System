@@ -5,8 +5,19 @@ client.connect()
 
 exports.getTasks = async (res, page, limit) => {
   client
-    .query(`SELECT * FROM TASKS LIMIT ` + page + `OFFSET ` + limit)
-    .then(results => res.status(200).json(results.rows))
+    .query(`SELECT * FROM TASKS LIMIT ` + limit + `OFFSET ` + page)
+    .then(results =>
+      res.json({
+        header: {
+          statusCode: '0000',
+          requestId: 'A-123',
+          timestamp: new Date()
+        },
+        body: {
+          task: results.rows
+        }
+      })
+    )
     .catch(err => console.log(err))
 }
 exports.getTaskDeadline = async taskId => {
@@ -37,7 +48,7 @@ exports.viewMyTasks = async (res, userId) => {
           timestamp: new Date()
         },
         body: {
-          user: results.rows
+          task: results.rows
         }
       })
     )
@@ -131,7 +142,7 @@ exports.createTask = async (res, taskName, taskOwner, deadline) => {
               timestamp: new Date()
             },
             body: {
-              user: results.rows
+              task: results.rows
             }
           })
         )
@@ -277,7 +288,7 @@ exports.applyTask = async (res, taskId, userId) => {
               timestamp: new Date()
             },
             body: {
-              user: results.rows
+              task: results.rows
             }
           })
         )
@@ -479,7 +490,7 @@ exports.sortFilteredTasks = async (res, page, limit, filter, sortBy) => {
           timestamp: new Date()
         },
         body: {
-          user: results.rows
+          task: results.rows
         }
       })
     )

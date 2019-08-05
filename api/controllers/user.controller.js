@@ -27,7 +27,7 @@ exports.signin = async (req, res) => {
 
 exports.suspendUser = async (req, res) => {
   const { userId, status } = req.body.body
-  if (await userFunctions.checkUser(userId)) {
+  if (await userFunctions.checkUser(res, userId)) {
     if (status) {
       if (await userFunctions.checkAlreadySuspended(res, userId)) {
         await userFunctions.userSuspension(res, userId, status)
