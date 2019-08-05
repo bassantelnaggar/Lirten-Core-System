@@ -3,6 +3,24 @@ const connectionString = process.env.DATABASE_URL
 const client = new pg.Client(connectionString)
 client.connect()
 
+exports.getMeetings = res => {
+  client
+    .query(`SELECT * FROM MEETINGS `)
+    .then(results =>
+      res.json({
+        header: {
+          statusCode: '0000',
+          requestId: 'A-123',
+          timestamp: new Date()
+        },
+        body: {
+          meeting: results.rows
+        }
+      })
+    )
+    .catch(err => console.log(err))
+}
+
 exports.meetingExists = async meetingId => {
   let length
   await client
@@ -218,7 +236,7 @@ exports.organizeMeeting = async (res, meetingId, taskId, attendeeId) => {
               timestamp: new Date()
             },
             body: {
-              user: results.rows
+              meeting: results.rows
             }
           })
         )

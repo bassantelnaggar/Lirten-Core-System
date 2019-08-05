@@ -2,6 +2,10 @@ const meetingFunctions = require('../helpers/functions/meeting.function')
 const taskFunctions = require('../helpers/functions/task.function')
 const userFunctions = require('../helpers/functions/user.function')
 
+exports.getMeetings = async (req, res) => {
+  meetingFunctions.getMeetings(res)
+}
+
 exports.createMeeting = async (req, res) => {
   const { meetingTitle, location, date, organizer, userTasks } = req.body.body
   if (await meetingFunctions.checkMeetingDate(res, date)) {
